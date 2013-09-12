@@ -3,7 +3,7 @@ unset label
 set xdata time
 set timefmt "%y%m%d"
 set format x "%d %b"
-set xrange ["130515":]
+#set xrange ["130515":]
 set xtics 2592000 font "Dejavu Sans, 10"
 set ytics 50 font "Dejavu Sans, 10"
 set grid
