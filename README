@@ -1,0 +1,5 @@
+USAGE:
+
+- copy Anki's collection.anki2 file into kanjiplot folder
+- set table_id in kanjiplot.sh according to your Anki database
+- run ./kanjiplot.sh

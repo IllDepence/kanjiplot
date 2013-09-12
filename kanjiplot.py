@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import sqlite3
-import unicodedata
 import datetime
+import sqlite3
+import sys
+import unicodedata
 
 conn = sqlite3.connect('collection.anki2')
 c = conn.cursor()
@@ -10,7 +11,7 @@ dates = []
 kanji = []
 data_points = dict()
 total = 0
-for row in c.execute('SELECT id, flds FROM notes WHERE mid IS 1367422637589 ORDER BY id'):
+for row in c.execute('SELECT id, flds FROM notes WHERE mid IS ' + sys.argv[1] + ' ORDER BY id'):
 	timestamp = row[0]
 	date = datetime.datetime.fromtimestamp(timestamp/1000).strftime("%y%m%d")
 	data = row[1]
