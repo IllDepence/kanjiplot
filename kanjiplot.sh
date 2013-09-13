@@ -1,7 +1,7 @@
 #!/bin/sh
 
-table_id=1367422637589
+deck_id=1367422637589 # your kanji deck
 
-python kanjiplot.py $table_id
+python kanjiplot.py $deck_id
 gnuplot kanjiplot.p
 rm kanji.dat
