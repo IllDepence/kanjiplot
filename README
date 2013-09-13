@@ -1,5 +1,20 @@
 USAGE:
 
 - copy Anki's collection.anki2 file into kanjiplot folder
-- set deck_id in kanjiplot.sh according to your Anki database
 - run ./kanjiplot.sh
+- a dialog will appear, choose your kanji deck
+- view output.png
+
+
+SCRIPTING:
+
+- run ./kanjiplot.sh find
+- a dialog will appear, choose a deck
+- the <deck_id> will be printed
+- run ./kanjiplot.sh <deck_id> for automated plotting
+
+
+NOTE:
+
+The script determines the number of kanji in your deck for every day you added at least one card,
+hence it will only work for self created decks where cards are added over time.
