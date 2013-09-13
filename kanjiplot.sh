@@ -3,7 +3,7 @@
 if [ $# -eq 0 ]
 then
 	python kanjiplot.py
-	else
+else
 	python kanjiplot.py $1
 	if [ $1 == "find" ]
 	then
