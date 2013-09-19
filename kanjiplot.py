@@ -40,10 +40,15 @@ kanji = []
 data_points = dict()
 total = 0
 
+cards_data_points = dict()
+cards_total = 0
+
 for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM cards WHERE did IS ' + str(deck_id) + ') ORDER BY id'):
 	timestamp = row[0]
 	date = datetime.datetime.fromtimestamp(timestamp/1000).strftime("%y%m%d")
 	data = row[1]
+	cards_total += 1
+	cards_data_points[date] = cards_total
 	for i in range(0, len(data)):
 		char = data[i]
 		try:
@@ -59,4 +64,4 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
 
 f = open('kanji.dat', 'w')
 for d in dates:
-	f.write(str(d) + ' ' + str(data_points[d]) + '\n')
+	f.write(str(d) + ' ' + str(data_points[d]) + ' ' + str(cards_data_points[d]) + '\n')
