@@ -23,6 +23,7 @@
 .jinmeiyou_regular { color: #9b2892; }
 .jinmeiyou_variant { color: #79289b; }
 .other { color: #000; }
+.known { background-color: #777; }
 </style>
 <!-- - - - - - - - - - - - - - - - - </style> - - - - - - - - - - - - - - - - -->
 
@@ -81,30 +82,40 @@ function dateToDay(first, date) {
     return daysBetween(first, date)
     }
 
-function dayWithData(first, data, day) {
+function dayWithData(first, data, day, get) {
     var date_fix = dayToDate(first, day);
     var i = 0;
     var date_var = first;
     var hit;
     while(daysBetween(date_var, date_fix) > -1) {
         i++;
-        console.log(i + ": " + date_var.toDateString() + " | " + date_fix.toDateString() + " | " + daysBetween(date_var, date_fix));
+        if(i == data.length-1) break;
         var date_var = data[i].kdate;
         }
-    return dateToDay(first, data[i-1].kdate);
+    if(get === 'number')
+        return dateToDay(first, data[i-1].kdate);
+    if(get == 'data')
+        return data[i-1];
+    return null;
     }
 
 function drawLists(data, day) {
     var date_start = data[0].kdate;
     var date_end = data[data.length-1].kdate;
-    var days = daysBetween(date_start, date_end)+1;
-    document.write(dayWithData(date_start, data, 10));
+    var days_count = daysBetween(date_start, date_end)+1;
+    if(day >= days_count-1) var curr_data = data[data.length-1];
+    else var curr_data = dayWithData(date_start, data, day, 'data');
 
     for(var i=0; i<kanji_lists.length; i++) {
         var span = document.querySelector("#"+kanji_ids[i]);
         var arr = kanji_lists[i].split("");
         for(var j=0; j<arr.length; j++) {
-            span.innerHTML += arr[j];
+            if(curr_data.kanji.indexOf(arr[j]) > -1) {
+                span.innerHTML += '<span class="known">'+arr[j]+'</span>';
+                }
+            else {
+                span.innerHTML += arr[j];
+                }
             }
         }
     }
@@ -141,7 +152,7 @@ for(var i=0; i<kanji_lines.length; i++) {
      */
     }
 
-var show_day = 1;
+var show_day = 269;
 
 drawLists(data_array, show_day);
 
