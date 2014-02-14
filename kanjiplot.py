@@ -25,10 +25,14 @@ def select_deck():
 conn = sqlite3.connect('collection.anki2')
 c = conn.cursor()
 with_raw = False
+raw_rel = False
 
-if(len(sys.argv) < 2 or sys.argv[1] == 'with_raw'):
-    if(sys.argv[1] == 'with_raw'):
+if(len(sys.argv) < 2 or sys.argv[1] == 'with_raw_abs' or sys.argv[1] == 'with_raw_rel'):
+    if(sys.argv[1] == 'with_raw_abs'):
         with_raw = True
+    if(sys.argv[1] == 'with_raw_rel'):
+        with_raw = True
+        raw_rel = True
     deck_tpl = select_deck()
     deck_id = deck_tpl[0]
 else:
@@ -65,9 +69,14 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
                         dates.append(date)
                     data_points[date] = total
                     if with_raw:
-                        kanji_data_points[date] = ''
-                        for i in range(0, len(kanji)):
-                            kanji_data_points[date] += kanji[i]
+                        if not date in kanji_data_points:
+                            kanji_data_points[date] = ''
+                        if raw_rel:
+                            if(kanji_data_points[date].find(char) == -1):
+                                kanji_data_points[date] += char
+                        else:
+                            for i in range(0, len(kanji)):
+                                kanji_data_points[date] += kanji[i]
         except ValueError:
             pass
 
