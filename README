@@ -14,6 +14,12 @@ SCRIPTING:
 - run ./kanjiplot.sh <deck_id> for automated plotting
 
 
+RAW KANJI LIST:
+
+- run ./kanjiplot.sh with_raw
+- additionally to output.png a file kanji_raw.dat is created
+
+
 NOTE:
 
 The script determines the number of kanji in your deck for every day you added at least one card, hence it will only work for self created decks where cards are added over time.

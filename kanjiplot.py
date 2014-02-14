@@ -24,8 +24,11 @@ def select_deck():
 
 conn = sqlite3.connect('collection.anki2')
 c = conn.cursor()
+with_raw = False
 
-if(len(sys.argv) < 2):
+if(len(sys.argv) < 2 or sys.argv[1] == 'with_raw'):
+    if(sys.argv[1] == 'with_raw'):
+        with_raw = True
     deck_tpl = select_deck()
     deck_id = deck_tpl[0]
 else:
@@ -43,6 +46,8 @@ total = 0
 cards_data_points = dict()
 cards_total = 0
 
+kanji_data_points = dict()
+
 for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM cards WHERE did IS ' + str(deck_id) + ') ORDER BY id'):
     timestamp = row[0]
     date = datetime.datetime.fromtimestamp(timestamp/1000).strftime("%y%m%d")
@@ -59,9 +64,17 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
                     if(not date in dates):
                         dates.append(date)
                     data_points[date] = total
+                    if with_raw:
+                        kanji_data_points[date] = ''
+                        for i in range(0, len(kanji)):
+                            kanji_data_points[date] += kanji[i]
         except ValueError:
             pass
 
 f = open('kanji.dat', 'w')
+if with_raw:
+    fr = open('kanji_raw.dat', 'w')
 for d in dates:
+    if with_raw:
+        fr.write(str(d) + ' ' + str(kanji_data_points[d]) + '\n')
     f.write(str(d) + ' ' + str(data_points[d]) + ' ' + str(cards_data_points[d]) + '\n')
