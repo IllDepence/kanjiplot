@@ -69,25 +69,36 @@ function readLocalTextFile(file, storeName) {
     }
 
 function daysBetween(d1, d2) {
-    return parseInt((d2.getTime()-d1.getTime())/1000/60/60/24)+1;
+    return parseInt((d2.getTime()-d1.getTime())/1000/60/60/24);
     }
 
 function dayToDate(first, day) {
-    
+    var ts = first.getTime() + (day*24*60*60*1000);
+    return new Date(ts);
     }
 
-function dateToDay(first, day) {
-    
+function dateToDay(first, date) {
+    return daysBetween(first, date)
     }
 
-function dayWithData(d) {
-    
+function dayWithData(first, data, day) {
+    var date_fix = dayToDate(first, day);
+    var i = 0;
+    var date_var = first;
+    var hit;
+    while(daysBetween(date_var, date_fix) > -1) {
+        i++;
+        console.log(i + ": " + date_var.toDateString() + " | " + date_fix.toDateString() + " | " + daysBetween(date_var, date_fix));
+        var date_var = data[i].kdate;
+        }
+    return dateToDay(first, data[i-1].kdate);
     }
 
 function drawLists(data, day) {
-    var date_start = data_array[0].kdate;
-    var date_end = data_array[data_array.length-1].kdate;
-    var days = daysBetween(date_start, date_end);
+    var date_start = data[0].kdate;
+    var date_end = data[data.length-1].kdate;
+    var days = daysBetween(date_start, date_end)+1;
+    document.write(dayWithData(date_start, data, 10));
 
     for(var i=0; i<kanji_lists.length; i++) {
         var span = document.querySelector("#"+kanji_ids[i]);
@@ -130,7 +141,7 @@ for(var i=0; i<kanji_lines.length; i++) {
      */
     }
 
-var show_day = 0;
+var show_day = 1;
 
 drawLists(data_array, show_day);
 
