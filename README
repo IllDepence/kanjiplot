@@ -24,3 +24,10 @@ RAW KANJI LIST:
 NOTE:
 
 The script determines the number of kanji in your deck for every day you added at least one card, hence it will only work for self created decks where cards are added over time.
+
+
+WINDOWS USERS:
+
+- Use kanjiplot.bat instead of kanjiplot.sh
+- Python and Gnuplot must be installed and available in the PATH before you run kanjiplot.bat
+- You may have to edit the file kanjiplot.p to use another font if you don't have Dejavu Sans installed ("Tahoma" should work fine).
