@@ -71,6 +71,8 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
                     if with_raw:
                         if not date in kanji_data_points:
                             kanji_data_points[date] = ''
+                        if not raw_rel:
+                            kanji_data_points[date] = ''
                         if raw_rel:
                             if(kanji_data_points[date].find(char) == -1):
                                 kanji_data_points[date] += char

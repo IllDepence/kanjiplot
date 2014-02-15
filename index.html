@@ -149,6 +149,7 @@ document.querySelector("#max").innerHTML = sessionStorage.getItem("max");
 
 function applyView() {
     var show_day = document.querySelector("#inp_day").value;
+    document.querySelector("#tlh").innerHTML = "Day " + show_day;
     highlights(data_array, show_day);
     }
 
