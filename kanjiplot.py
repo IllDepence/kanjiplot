@@ -93,5 +93,8 @@ if with_raw:
     fr = open('kanji_raw.dat', 'w')
 for d in dates:
     if with_raw:
-        fr.write(str(d) + ' ' + kanji_data_points[d].encode('utf8') + '\n')
+        if(sys.platform == 'win32'):
+            fr.write(str(d) + ' ' + kanji_data_points[d].encode('utf8') + '\n')
+        else:
+            fr.write(str(d) + ' ' + str(kanji_data_points[d]) + '\n')
     f.write(str(d) + ' ' + str(data_points[d]) + ' ' + str(cards_data_points[d]) + '\n')
