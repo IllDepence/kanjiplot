@@ -39,7 +39,12 @@ if(len(sys.argv) < 2 or sys.argv[1] == 'with_raw_abs' or sys.argv[1] == 'with_ra
 else:
     if(sys.argv[1] == 'find'):
         deck_tpl = select_deck()
-        print('\ndeck "'+deck_tpl[1]+'" has ID '+str(deck_tpl[0])+'\n\nrun the following command for automated plotting:\n./kanjiplot.sh '+str(deck_tpl[0])+'\n\n\n')
+        kanjiplot_command = ''
+        if(sys.platform == 'win32'):
+            kanjiplot_command = 'kanjiplot '
+        else:
+            kanjiplot_command = './kanjiplot.sh '
+        print('\ndeck "'+deck_tpl[1]+'" has ID '+str(deck_tpl[0])+'\n\nrun the following command for automated plotting:\n'+kanjiplot_command+str(deck_tpl[0])+'\n\n\n')
         sys.exit(0)
     deck_id = sys.argv[1]
 
@@ -88,5 +93,5 @@ if with_raw:
     fr = open('kanji_raw.dat', 'w')
 for d in dates:
     if with_raw:
-        fr.write(str(d) + ' ' + str(kanji_data_points[d]) + '\n')
+        fr.write(str(d) + ' ' + kanji_data_points[d].encode('utf8') + '\n')
     f.write(str(d) + ' ' + str(data_points[d]) + ' ' + str(cards_data_points[d]) + '\n')
