@@ -28,7 +28,7 @@ with_raw = False
 raw_rel = False
 
 if(len(sys.argv) < 2 or sys.argv[1] == 'with_raw_abs' or sys.argv[1] == 'with_raw_rel'):
-    if len(sys.argv) < 1:
+    if len(sys.argv) == 2:
         if(sys.argv[1] == 'with_raw_abs'):
             with_raw = True
         if(sys.argv[1] == 'with_raw_rel'):
