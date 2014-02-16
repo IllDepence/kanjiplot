@@ -101,8 +101,9 @@ function highlights_abs(data, day) {
 function highlights_rel(data, day) {
     var date = dayToDate(data[0].kdate, day);
     var m_tmp = parseInt(date.getMonth()+1);
-    var date_str = date.getFullYear().toString().substr(2, 2) + (m_tmp<10 ? "0"+m_tmp : m_tmp) + date.getDate();
-    var patt = new RegExp(date_str+".+(?=\n)")
+    var d_tmp = parseInt(date.getDate());
+    var date_str = date.getFullYear().toString().substr(2, 2) + (m_tmp<10 ? "0"+m_tmp : m_tmp) + (d_tmp<10 ? "0"+d_tmp : d_tmp);
+    var patt = new RegExp(date_str+".+(?=\n)");
     var match = kanji_data.match(patt);
     if(match == null) return;
     else var kanji_str = match.toString().substr(7);
