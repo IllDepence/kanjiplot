@@ -69,14 +69,13 @@ function dayToDate(first, day) {
     }
 
 function dateToDay(first, date) {
-    return daysBetween(first, date)
+    return daysBetween(first, date);
     }
 
 function dayWithData(first, data, day, get) {
     var date_fix = dayToDate(first, day);
     var i = 0;
     var date_var = first;
-    var hit;
     while(daysBetween(date_var, date_fix) > -1) {
         i++;
         if(i == data.length-1) break;
@@ -105,7 +104,7 @@ function highlights_rel(data, day) {
     var date_str = date.getFullYear().toString().substr(2, 2) + (m_tmp<10 ? "0"+m_tmp : m_tmp) + date.getDate();
     var patt = new RegExp(date_str+".+(?=\n)")
     var match = kanji_data.match(patt);
-    if(match == null) return
+    if(match == null) return;
     else var kanji_str = match.toString().substr(7);
     highlights_apply(kanji_str.split(""));
     }
@@ -113,8 +112,10 @@ function highlights_rel(data, day) {
 function highlights_apply(kanji_arr) {
     for(var i=0; i<kanji_arr.length; i++) {
         var k = kanji_arr[i];
-        if(par.innerHTML.indexOf(k) < 0 && njj.innerHTML.indexOf(k) < 0) {
-            njj.innerHTML += k;
+        if(par.innerHTML.indexOf(k) < 0) {
+            if(njj.innerHTML.indexOf(k) < 0) {
+                njj.innerHTML += k;
+                }
             }
         else {
             par.innerHTML = par.innerHTML.replace(k, '<s>' + k + '</s>');
