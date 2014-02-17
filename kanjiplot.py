@@ -88,9 +88,9 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
         except ValueError:
             pass
 
-f = open('kanji.dat', 'w')
+f = open('kanji.dat', 'wb')
 if with_raw:
-    fr = open('kanji_raw.dat', 'w')
+    fr = open('kanji_raw.dat', 'wb')
 for d in dates:
     if with_raw:
         if(sys.platform == 'win32'):
