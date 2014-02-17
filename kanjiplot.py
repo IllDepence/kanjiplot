@@ -27,6 +27,13 @@ c = conn.cursor()
 with_raw = False
 raw_rel = False
 
+if(sys.platform == 'win32'):
+    kanjiplot_command = 'kanjiplot '
+    write_flags = 'wb'
+else:
+    kanjiplot_command = './kanjiplot.sh '
+    write_flags = 'w'
+
 if(len(sys.argv) < 2 or sys.argv[1] == 'with_raw_abs' or sys.argv[1] == 'with_raw_rel'):
     if len(sys.argv) == 2:
         if(sys.argv[1] == 'with_raw_abs'):
@@ -39,11 +46,6 @@ if(len(sys.argv) < 2 or sys.argv[1] == 'with_raw_abs' or sys.argv[1] == 'with_ra
 else:
     if(sys.argv[1] == 'find'):
         deck_tpl = select_deck()
-        kanjiplot_command = ''
-        if(sys.platform == 'win32'):
-            kanjiplot_command = 'kanjiplot '
-        else:
-            kanjiplot_command = './kanjiplot.sh '
         print('\ndeck "'+deck_tpl[1]+'" has ID '+str(deck_tpl[0])+'\n\nrun the following command for automated plotting:\n'+kanjiplot_command+str(deck_tpl[0])+'\n\n\n')
         sys.exit(0)
     deck_id = sys.argv[1]
@@ -88,9 +90,9 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
         except ValueError:
             pass
 
-f = open('kanji.dat', 'wb')
+f = open('kanji.dat', write_flags)
 if with_raw:
-    fr = open('kanji_raw.dat', 'wb')
+    fr = open('kanji_raw.dat', write_flags)
 for d in dates:
     if with_raw:
         if(sys.platform == 'win32'):
