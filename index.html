@@ -64,7 +64,7 @@ function daysBetween(d1, d2) {
     }
 
 function dayToDate(first, day) {
-    var ts = first.getTime() + (day*24*60*60*1000);
+    var ts = first.getTime() + (day*24*60*60*1000) + (12*60*60*1000); // add 12 hours to prevent DST from messing stuff up
     return new Date(ts);
     }
 
