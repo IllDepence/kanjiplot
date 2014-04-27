@@ -12,4 +12,4 @@ else
 fi
 
 gnuplot kanjiplot.p
-rm kanji.dat
+mv kanji.dat web

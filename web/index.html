@@ -1,0 +1,192 @@
+<!DOCTYPE HTML>
+
+<!-- - - - - - - - - - - - - - - - - <html> - - - - - - - - - - - - - - - - -->
+<html>
+
+<!-- - - - - - - - - - - - - - - - - <head> - - - - - - - - - - - - - - - - -->
+<head>
+
+<meta charset='utf-8' />
+<script src='d3/d3.js' charset='utf-8'></script>
+
+<!-- - - - - - - - - - - - - - - - - <style> - - - - - - - - - - - - - - - - -->
+<style type='text/css'>
+.line path {
+  fill: none;
+  stroke-width: 1px;
+}
+.axis {
+  shape-rendering: crispEdges;
+}
+.y.axis line, .y.axis path, .x.axis line, .x.axis path {
+  fill: none;
+  stroke: #000;
+}
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+.focus line {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #ccc;
+  shape-rendering: crispEdges;
+  opacity: 0.5;
+}
+.words {
+  stroke: #e04646 !important;
+  }
+.kanji {
+  stroke: #0060ad !important;
+  }
+.wordstext {
+  fill: #e04646;
+  }
+.kanjitext {
+  fill: #0060ad;
+  }
+</style>
+<!-- - - - - - - - - - - - - - - - - </style> - - - - - - - - - - - - - - - - -->
+
+</head>
+<!-- - - - - - - - - - - - - - - - - </head> - - - - - - - - - - - - - - - - -->
+
+
+<!-- - - - - - - - - - - - - - - - - <body> - - - - - - - - - - - - - - - - -->
+<body>
+<div id='graph'></div>
+
+<script>
+function refub(data) {
+    return {
+        date: parseDate(data[0]),
+        kanji: data[1],
+        words: data[2]
+        }
+    }
+function parseData(rows) {
+    var data = dsv.parseRows(rows, refub);
+    show(data);
+    }
+function show(data) {
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    var wmax = d3.max(data.map(function(data) { return +data.words }))
+    var kmax = d3.max(data.map(function(data) { return +data.kanji }))
+    y.domain([0, wmax]);
+    var kline = d3.svg.line()
+                      .x(function(d) { return x(d.date); })
+                      .y(function(d) { return y(d.kanji); });
+    var wline = d3.svg.line()
+                      .x(function(d) { return x(d.date); })
+                      .y(function(d) { return y(d.words); });
+    svg.append('g')
+       .attr('class', 'x axis')
+       .attr('transform', 'translate(0,' + height + ')')
+       .call(xAxis)
+       .selectAll('text')
+         .style('text-anchor', 'end')
+         .attr('transform', 'rotate(-90)')
+         .attr('dy', '-5px')
+         .attr('dx', '-9px');
+    svg.append('g')
+       .attr('class', 'y axis')
+       .attr('transform', 'translate(' + width + ', 0)')
+       .call(yAxis)
+    var line = svg.append('g')
+                  .attr('class', 'line')
+    line.append('path')
+        .attr('class', 'kanji')
+        .attr('d', kline(data));
+    line.append('path')
+        .attr('class', 'words')
+        .attr('d', wline(data));
+    var focus = svg.append('g')
+                   .attr('class', 'focus')
+                   .style('display', 'none');
+    var fline = focus.append('line')
+                     .attr('y1', height-1)
+                     .attr('y2', 0);
+    var vlinek = focus.append('line')
+                      .attr('x2', width-1)
+                      .attr('class', 'kanji');
+    var vlinew = focus.append('line')
+                      .attr('x2', width-1)
+                      .attr('class', 'words');
+    var valw = svg.append('text')
+                  .attr('x', 20)
+                  .attr('y', 15)
+                  .attr('class', 'wordstext')
+                  .text('words: ' + wmax);
+    var valk = svg.append('text')
+                  .attr('x', 22)
+                  .attr('y', 32)
+                  .attr('class', 'kanjitext')
+                  .text('kanji ' + kmax);
+    svg.append('rect')
+       .attr('class', 'overlay')
+       .attr('width', width)
+       .attr('height', height)
+       .on('mousemove', mousemove)
+       .on('mouseover', function() { focus.style('display', null); })
+       .on('mouseout', function() { focus.style('display', 'none');
+                                    valw.text('words: ' + wmax);
+                                    valk.text('kanji ' + kmax); });
+    dates = data.map(function(d) { return d.date });
+    function mousemove() {
+        var mx = d3.mouse(this)[0],
+            dx = x.invert(mx),
+            idx = d3.bisectLeft(dates, dx),
+            kanji = data[idx].kanji,
+            words = data[idx].words;
+        fline.attr('x1', mx).attr('x2', mx);
+        vlinek.attr('x1', mx)
+              .attr('y1', y(data[idx].kanji))
+              .attr('y2', y(data[idx].kanji));
+        valk.text('kanji ' + data[idx].kanji);
+        vlinew.attr('x1', mx)
+              .attr('y1', y(data[idx].words))
+              .attr('y2', y(data[idx].words));
+        valw.text('words: ' + data[idx].words);
+        }
+    }
+
+var margin = {top: 6, right: 54, bottom: 64, left: 6},
+    width = 700 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+var parseDate = d3.time.format('%y%m%d').parse;
+var x = d3.time.scale()
+          .range([0, width]);
+var y = d3.scale.linear()
+          .range([height, 0]);
+var color = d3.scale.category10();
+var xAxis = d3.svg.axis()
+              .scale(x)
+              .tickFormat(function(d) {
+                    mo = d3.time.format('%b')
+                    jo = d3.time.format('%Y')
+                    if(mo(d) != 'Jan') return mo(d)
+                    else return jo(d)
+                    })
+              .orient('bottom');
+var yAxis = d3.svg.axis()
+              .scale(y)
+              .orient('right');
+var line = d3.svg.line()
+             .interpolate('basis')
+             .x(function(d) { return x(d.date); })
+             .y(function(d) { return y(d.kanji); });
+var svg = d3.select('#graph').append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', 'translate('+margin.left+','+margin.top+')');
+
+var dsv = d3.dsv(' ', 'text/plain');
+d3.text('kanji.dat', 'text/plain', parseData);
+
+</script>
+</body>
+<!-- - - - - - - - - - - - - - - - - </body> - - - - - - - - - - - - - - - - -->
+
+</html>
+<!-- - - - - - - - - - - - - - - - - </html> - - - - - - - - - - - - - - - - -->
