@@ -29,5 +29,5 @@ The script determines the number of kanji in your deck for every day you added a
 WINDOWS USERS:
 
 - Use kanjiplot.bat instead of kanjiplot.sh
-- Python and Gnuplot must be installed and available in the PATH before you run kanjiplot.bat
-- You may have to edit the file kanjiplot.p to use another font if you don't have Dejavu Sans installed ("Tahoma" should work fine).
+- Python and gnuplot must be installed and available in the PATH before you run kanjiplot.bat
+- You may have to edit the file kanjiplot.p to use another font if you don't have Dejavu Sans installed (Tahoma should work fine).
