@@ -24,8 +24,7 @@ def select_deck():
 
 conn = sqlite3.connect('collection.anki2')
 c = conn.cursor()
-with_raw = False
-raw_rel = False
+raw_abs = False
 
 if(sys.platform == 'win32'):
     kanjiplot_command = 'kanjiplot '
@@ -34,13 +33,10 @@ else:
     kanjiplot_command = './kanjiplot.sh '
     write_flags = 'w'
 
-if(len(sys.argv) < 2 or sys.argv[1] == 'with_raw_abs' or sys.argv[1] == 'with_raw_rel'):
+if(len(sys.argv) < 2 or sys.argv[1] == 'raw_abs'):
     if len(sys.argv) == 2:
-        if(sys.argv[1] == 'with_raw_abs'):
-            with_raw = True
-        if(sys.argv[1] == 'with_raw_rel'):
-            with_raw = True
-            raw_rel = True
+        if(sys.argv[1] == 'raw_abs'):
+            raw_abs = True
     deck_tpl = select_deck()
     deck_id = deck_tpl[0]
 else:
@@ -76,27 +72,23 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
                     if(not date in dates):
                         dates.append(date)
                     data_points[date] = total
-                    if with_raw:
-                        if not date in kanji_data_points:
-                            kanji_data_points[date] = ''
-                        if not raw_rel:
-                            kanji_data_points[date] = ''
-                        if raw_rel:
-                            if(kanji_data_points[date].find(char) == -1):
-                                kanji_data_points[date] += char
-                        else:
-                            for i in range(0, len(kanji)):
-                                kanji_data_points[date] += kanji[i]
+                    if not date in kanji_data_points:
+                        kanji_data_points[date] = ''
+                    if raw_abs:
+                        kanji_data_points[date] = ''
+                        for i in range(0, len(kanji)):
+                            kanji_data_points[date] += kanji[i]
+                    else:
+                        if(kanji_data_points[date].find(char) == -1):
+                            kanji_data_points[date] += char
         except ValueError:
             pass
 
 f = open('kanji.dat', write_flags)
-if with_raw:
-    fr = open('kanji_raw.dat', write_flags)
+fr = open('timelapse/kanji_raw.dat', write_flags)
 for d in dates:
-    if with_raw:
-        if(sys.platform == 'win32'):
-            fr.write(str(d) + ' ' + kanji_data_points[d].encode('utf8') + '\n')
-        else:
-            fr.write(str(d) + ' ' + str(kanji_data_points[d]) + '\n')
+    if(sys.platform == 'win32'):
+        fr.write(str(d) + ' ' + kanji_data_points[d].encode('utf8') + '\n')
+    else:
+        fr.write(str(d) + ' ' + str(kanji_data_points[d]) + '\n')
     f.write(str(d) + ' ' + str(data_points[d]) + ' ' + str(cards_data_points[d]) + '\n')
