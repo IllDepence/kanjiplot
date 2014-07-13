@@ -230,7 +230,7 @@ d3.text('kanji.dat', 'text/plain', function(text) {
             }
         else {
             currMonth = getDeltaMonth;
-            monthLow = kanji;
+            monthLow = (i==0 ? 0 : kanji);
             for(var j=i; currMonth==getDeltaMonth; j++) {
                 if(typeof(lines[j])=='undefined') break;
                 if(lines[j].length==0) continue;
