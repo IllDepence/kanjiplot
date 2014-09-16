@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -eq 0 ]
 then
-    python kanjiplot.py
+    python3 kanjiplot.py
 else
-    python kanjiplot.py $1
+    python3 kanjiplot.py $1
     if [ $1 == "find" ]
     then
         exit
