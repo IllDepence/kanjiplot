@@ -59,7 +59,10 @@ kanji_data_points = dict()
 for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM cards WHERE did IS ' + str(deck_id) + ') ORDER BY id'):
     timestamp = row[0]
     date = datetime.datetime.fromtimestamp(timestamp/1000).strftime("%y%m%d")
-    data = row[1]
+    data_pre = row[1]
+    data = data_pre.split(u'\x1f')[0] # picks first field of the flds attribute
+                                      # allows for "notes" in other fields that
+                                      # won't be counted
     cards_total += 1
     cards_data_points[date] = cards_total
     for i in range(0, len(data)):

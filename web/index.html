@@ -141,17 +141,17 @@ function show(data) {
                   .attr('x', 20)
                   .attr('y', 15)
                   .attr('class', 'wordstext')
-                  .text('words: ' + wmax);
+                  .text('語彙: ' + wmax);
     var valk = svg.append('text')
                   .attr('x', 22)
                   .attr('y', 32)
                   .attr('class', 'kanjitext')
-                  .text('kanji: ' + kmax);
+                  .text('漢字: ' + kmax);
     var valr = svg.append('text')
                   .attr('x', 22)
                   .attr('y', 49)
                   .attr('class', 'secondary')
-                  .text('kanji/month: -');
+                  .text('漢字/月: -');
     svg.append('rect')
        .attr('class', 'overlay')
        .attr('width', width)
@@ -159,9 +159,9 @@ function show(data) {
        .on('mousemove', mousemove)
        .on('mouseover', function() { focus.style('display', null); })
        .on('mouseout', function() { focus.style('display', 'none');
-                                    valw.text('words: ' + wmax);
-                                    valk.text('kanji: ' + kmax);
-                                    valr.text('kanji/month: -'); });
+                                    valw.text('語彙: ' + wmax);
+                                    valk.text('漢字: ' + kmax);
+                                    valr.text('漢字/月: -'); });
     dates = data.map(function(d) { return d.date });
     function mousemove() {
         var mx = d3.mouse(this)[0],
@@ -173,12 +173,12 @@ function show(data) {
         vlinek.attr('x1', mx)
               .attr('y1', y0(data[idx].kanji))
               .attr('y2', y0(data[idx].kanji));
-        valk.text('kanji: ' + data[idx].kanji);
+        valk.text('漢字: ' + data[idx].kanji);
         vlinew.attr('x1', mx)
               .attr('y1', y0(data[idx].words))
               .attr('y2', y0(data[idx].words));
-        valw.text('words: ' + data[idx].words);
-        valr.text('kanji/month: ' + data[idx].rate);
+        valw.text('語彙: ' + data[idx].words);
+        valr.text('漢字/月: ' + data[idx].rate);
         }
     }
 
