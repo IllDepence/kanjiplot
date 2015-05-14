@@ -4,6 +4,7 @@ set xdata time
 set timefmt "%y%m%d"
 set format x "%d %b"
 set xrange ["130515":]
+set xtics rotate
 set xtics 2592000 font "Dejavu Sans, 10"
 set y2tics font "Dejavu Sans, 10"
 set ytics format ""
