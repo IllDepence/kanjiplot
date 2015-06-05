@@ -65,6 +65,7 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
                                       # won't be counted
     cards_total += 1
     cards_data_points[date] = cards_total
+    last_cards_date = date
     for i in range(0, len(data)):
         char = data[i]
         try:
@@ -74,6 +75,7 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
                     kanji.append(char)
                     if(not date in dates):
                         dates.append(date)
+                        last_kanji_date = date
                     data_points[date] = total
                     if not date in kanji_data_points:
                         kanji_data_points[date] = ''
@@ -87,11 +89,21 @@ for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM ca
         except ValueError:
             pass
 
+today = datetime.datetime.now().strftime("%y%m%d")
+added_today = False
+if not raw_abs and not dates[-1] == today:
+    dates.append(today)
+    data_points[today] = data_points[last_kanji_date]
+    cards_data_points[today] = cards_data_points[last_cards_date]
+    added_today = True
+
 f = open('kanji.dat', write_flags)
 fr = open('timelapse/kanji_raw.dat', write_flags)
 for d in dates:
+    f.write(str(d) + ' ' + str(data_points[d]) + ' ' + str(cards_data_points[d]) + '\n')
+    if added_today and d == today:
+        continue
     if(sys.platform == 'win32'):
         fr.write(str(d) + ' ' + kanji_data_points[d].encode('utf8') + '\n')
     else:
         fr.write(str(d) + ' ' + str(kanji_data_points[d]) + '\n')
-    f.write(str(d) + ' ' + str(data_points[d]) + ' ' + str(cards_data_points[d]) + '\n')
