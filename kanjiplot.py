@@ -6,6 +6,7 @@ import sqlite3
 import sys
 import unicodedata
 
+
 def select_deck():
     decks = []
     for row in c.execute('SELECT decks FROM col'):
@@ -42,7 +43,11 @@ if(len(sys.argv) < 2 or sys.argv[1] == 'raw_abs'):
 else:
     if(sys.argv[1] == 'find'):
         deck_tpl = select_deck()
-        print('\ndeck "'+deck_tpl[1]+'" has ID '+str(deck_tpl[0])+'\n\nrun the following command for automated plotting:\n'+kanjiplot_command+str(deck_tpl[0])+'\n\n\n')
+        print(('\ndeck "{}" has ID {}\n\nrun the following command for automat'
+               'ed plotting:\n{}{}\n\n\n').format(deck_tpl[1],
+                                                  deck_tpl[0],
+                                                  kanjiplot_command,
+                                                  deck_tpl[0]))
         sys.exit(0)
     deck_id = sys.argv[1]
 
@@ -56,38 +61,44 @@ cards_total = 0
 
 kanji_data_points = dict()
 
-for row in c.execute('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM cards WHERE did IS ' + str(deck_id) + ') ORDER BY id'):
+for row in c.execute(('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM'
+                      ' cards WHERE did IS {}) ORDER BY id').format(deck_id)):
     timestamp = row[0]
     date = datetime.datetime.fromtimestamp(timestamp/1000).strftime("%y%m%d")
     data_pre = row[1]
-    data = data_pre.split(u'\x1f')[0] # picks first field of the flds attribute
-                                      # allows for "notes" in other fields that
-                                      # won't be counted
+    data = data_pre.split(u'\x1f')[0]
+    # ↑ picks first field of the flds attribute. allows for "notes" in other
+    # fields that won't be counted
+
     cards_total += 1
     cards_data_points[date] = cards_total
     last_cards_date = date
+    if date not in kanji_data_points:
+        kanji_data_points[date] = ''
     for i in range(0, len(data)):
         char = data[i]
         try:
-            if(unicodedata.name(char).find('CJK UNIFIED IDEOGRAPH') >= 0):
-                if(not char in kanji):
+            if unicodedata.name(char).find('CJK UNIFIED IDEOGRAPH') >= 0:
+                if char not in kanji:
                     total += 1
                     kanji.append(char)
-                    if(not date in dates):
+                    if date not in dates:
                         dates.append(date)
                         last_kanji_date = date
                     data_points[date] = total
-                    if not date in kanji_data_points:
-                        kanji_data_points[date] = ''
                     if raw_abs:
                         kanji_data_points[date] = ''
                         for i in range(0, len(kanji)):
                             kanji_data_points[date] += kanji[i]
                     else:
-                        if(kanji_data_points[date].find(char) == -1):
+                        if kanji_data_points[date].find(char) == -1:
                             kanji_data_points[date] += char
         except ValueError:
             pass
+    if date not in dates:
+        dates.append(date)
+        last_kanji_date = date
+    data_points[date] = total
 
 today = datetime.datetime.now().strftime("%y%m%d")
 added_today = False
@@ -100,10 +111,10 @@ if not raw_abs and not dates[-1] == today:
 f = open('kanji.dat', write_flags)
 fr = open('timelapse/kanji_raw.dat', write_flags)
 for d in dates:
-    f.write(str(d) + ' ' + str(data_points[d]) + ' ' + str(cards_data_points[d]) + '\n')
+    f.write('{} {} {}\n'.format(d, data_points[d], cards_data_points[d]))
     if added_today and d == today:
         continue
-    if(sys.platform == 'win32'):
+    if sys.platform == 'win32':
         fr.write(str(d) + ' ' + kanji_data_points[d].encode('utf8') + '\n')
     else:
         fr.write(str(d) + ' ' + str(kanji_data_points[d]) + '\n')
