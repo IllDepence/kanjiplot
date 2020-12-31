@@ -7,24 +7,23 @@ import sys
 import unicodedata
 
 
-def select_deck():
+def select_deck(db_cursor):
     decks = []
-    for row in c.execute('SELECT decks FROM col'):
-        deks = json.loads(row[0])
-        for key in deks:
-            d_id = deks[key]['id']
-            d_name = deks[key]['name']
-            decks.append((d_id, d_name))
+    for row in db_cursor.execute('SELECT id, name FROM decks'):
+        d_id = row[0]
+        d_name = row[1]
+        decks.append((d_id, d_name))
+    choices = [deck[1] for deck in decks]
 
     print('Which deck would you like to plot?\n')
 
-    for i in range(len(decks)):
-        print(' ['+str(i)+'] '+decks[i][1])
+    for i in range(len(choices)):
+        print(' ['+str(i)+'] '+choices[i])
     inp = int(input('\n'))
     return decks[inp]
 
 conn = sqlite3.connect('collection.anki2')
-c = conn.cursor()
+db_cursor = conn.cursor()
 raw_abs = False
 
 if(sys.platform == 'win32'):
@@ -38,11 +37,11 @@ if(len(sys.argv) < 2 or sys.argv[1] == 'raw_abs'):
     if len(sys.argv) == 2:
         if(sys.argv[1] == 'raw_abs'):
             raw_abs = True
-    deck_tpl = select_deck()
+    deck_tpl = select_deck(db_cursor)
     deck_id = deck_tpl[0]
 else:
     if(sys.argv[1] == 'find'):
-        deck_tpl = select_deck()
+        deck_tpl = select_deck(db_cursor)
         print(('\ndeck "{}" has ID {}\n\nrun the following command for automat'
                'ed plotting:\n{}{}\n\n\n').format(deck_tpl[1],
                                                   deck_tpl[0],
@@ -61,8 +60,9 @@ cards_total = 0
 
 kanji_data_points = dict()
 
-for row in c.execute(('SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM'
-                      ' cards WHERE did IS {}) ORDER BY id').format(deck_id)):
+for row in db_cursor.execute(
+        'SELECT id, flds FROM notes WHERE id IN (SELECT nid FROM'
+        ' cards WHERE did = ?) ORDER BY id', (deck_id,)):
     timestamp = row[0]
     date = datetime.datetime.fromtimestamp(timestamp/1000).strftime("%y%m%d")
     data_pre = row[1]
