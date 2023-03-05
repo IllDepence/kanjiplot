@@ -48,6 +48,7 @@ def get_deck_stats(db_cursor, deck_id, already_known=[]):
     # go through all first reviews of a note in given deck
     card_ids_seen = []
     note_ids_seen = []
+    last_kanji_date = None
     for (timestamp, card_id) in db_cursor.execute(
             query_reviews_of_deck,
             (deck_id,)
@@ -73,24 +74,31 @@ def get_deck_stats(db_cursor, deck_id, already_known=[]):
         # ↓ in other fields that won't be counted
         card_front = note_fields.split('\x1f')[0]
         # look for new kanji
-        new_kanji = set()
+        num_new_kanji_review = 0
+        if date != last_kanji_date:
+            # reset if review is on a new day
+            new_kanji = set()
+        else:
+            # continue adding if review is on the same day than previous
+            new_kanji = set(stats[last_kanji_date]['kanji_new'])
         for char in card_front:
             try:
                 if unicodedata.name(char).find('CJK UNIFIED IDEOGRAPH') >= 0:
                     if char not in kanji_all and char not in already_known:
                         new_kanji.add(char)
+                        num_new_kanji_review += 1
                         last_kanji_date = date
             except ValueError:
                 pass
         # persist stats for the day
-        num_kanji_total += len(new_kanji)
+        num_kanji_total += num_new_kanji_review
         num_cards_total += 1
         kanji_all += list(new_kanji)
         stats[date] = {
             'num_kanji_total': num_kanji_total,
             'num_cards_total': num_cards_total,
-            'kanji_all': kanji_all,
-            'kanji_new': list(new_kanji)
+            'kanji_all': kanji_all.copy(),
+            'kanji_new': list(new_kanji.copy())
         }
         last_cards_date = date
 
@@ -114,87 +122,110 @@ def kanjiplot_multi():
         (recognition+recall, recall only, given name recall only)
     """
 
+    # set up DB
     anki_db_fp = 'collection.anki2'
-    jouyou_fp = '/home/tarek/data_personal/projects/japanese/res/jouyou_kanji'
     conn = sqlite3.connect(anki_db_fp)
     db_cursor = conn.cursor()
 
+    # get deck stats
     decks_stats = {
         'recognition+recall': None,
         'recall only': None,
         'given name recall only': None
     }
-    already_known = []
+    in_previous_decks = []
     for d_type in decks_stats.keys():
         print(f'Select your {d_type} deck')
         deck_tpl = select_deck(db_cursor)
         deck_id = deck_tpl[0]
-        stats = get_deck_stats(db_cursor, deck_id, already_known)
+        stats = get_deck_stats(db_cursor, deck_id, in_previous_decks)
         # remeber kanji from previous deck
-        already_known += stats[list(stats.keys())[-1]]['kanji_all']
+        in_previous_decks += stats[list(stats.keys())[-1]]['kanji_all']
         decks_stats[d_type] = stats
-    return decks_stats
 
+
+    # determine accumulative stats for
+    # - jouyou coverage
+    # - reco_reca
+    # - reco+reca and reca only
+    # - reco+reca and reca only and reca in given names only (all)
+    jouyou_fp = '/home/tarek/data_personal/projects/japanese/res/jouyou_kanji'
     with open(jouyou_fp) as f:
-        jouyou_kanji = list(f.read().strip())
+        jouyou_kanji = set(f.read().strip())
+    # # get list of all dates for which data points exist across decks
+    joint_dates = []
+    for stats in decks_stats.values():
+        joint_dates.extend(stats.keys())
+    joint_dates = list(set(joint_dates))
+    joint_dates.sort()
+    jouyou_coverage = []
+    num_kanji_rw = []
+    num_kanji_rwro = []
+    num_kanji_rwroro_names = []
+    num_words_total = []
+    covered_kanji = set()
+    nrw, nrwro, nrwroron, nword = (0, 0, 0, 0)
+    for i, date in enumerate(joint_dates):
+        # get new kanji from all deck types
+        kanji_new_rw = decks_stats['recognition+recall'].get(
+            date, defaultdict(list)
+        )['kanji_new']
+        kanji_new_ro = decks_stats['recall only'].get(
+            date, defaultdict(list)
+        )['kanji_new']
+        kanji_new_gnro = decks_stats['given name recall only'].get(
+            date, defaultdict(list)
+        )['kanji_new']
+        # # get words counts from vocab deck types
+        # nwords_
 
-    # determine number of accumulatively covered jouyou kanji
-    data_points_tmp = {}
-    covered_kanji_str = ''
-    for k, vals in data_points_full.items():
-        covered_kanji_str += vals[0] + vals[1]
-        covered = set(jouyou_kanji).intersection(set(covered_kanji_str))
-        vals_ext = vals.copy()
-        vals_ext += [len(covered)]
-        data_points_tmp[k] = vals_ext
-    data_points_full = data_points_tmp
+        # update stats
+        covered_kanji.update(
+            kanji_new_rw + kanji_new_ro + kanji_new_gnro
+        )
+        nrw += len(kanji_new_rw)
+        nrwro += len(kanji_new_rw + kanji_new_ro)
+        nrwroron += len(kanji_new_rw + kanji_new_ro + kanji_new_gnro)
 
-    # persist in TSV file
-    with open('kanji_ext.tsv', 'w', newline='') as f:
-        writer = csv.writer(f, delimiter='\t')
-        writer.writerow([
-            'date', 'new_rw', 'new_ro', 'kanji_rw',
-            'kanji_ro', 'words_rw', 'words_ro', 'jouyou_covered'
-        ])
-        for k, v in data_points_full.items():
-            writer.writerow([k] + v)
+        # add numbers to lists
+        covered_jouyou_kanji = jouyou_kanji.intersection(covered_kanji)
+        jouyou_coverage.append(len(covered_jouyou_kanji))
+        num_kanji_rw.append(nrw)
+        num_kanji_rwro.append(nrwro)
+        num_kanji_rwroro_names.append(nrwroron)
+        # num_words_total.append(nword)
 
-    dates = [
-        datetime.datetime.strptime(s, '%y%m%d') for s in data_points_full.keys()
-    ]
-
-    rw_kanji = [v[2] for v in data_points_full.values()]
-    r_kanji = [
-        v[2]+v[3] for v in data_points_full.values() if v[3] > 0
-    ]
-    covered_jouyou = [v[6] for v in data_points_full.values()]
-    dates_r_kanji = dates[-len(r_kanji):]
-
-    rw_words = [v[4] for v in data_points_full.values()]
-    r_words = [
-        v[4]+v[5] for v in data_points_full.values() if v[5] > 0
-        ]
-    dates_r_words = dates[-len(r_words):]
+    plot_dates = list(map(
+        datetime.datetime.strptime,
+        joint_dates,
+        len(joint_dates)*['%y%m%d'])
+    )
 
     out_dpi = 96
     fig, ax1 = plt.subplots(figsize=(700/out_dpi, 300/out_dpi), dpi=out_dpi)
-    ax1.plot(dates, rw_kanji, label='recognition + recall')
-    ax1.plot(dates_r_kanji, r_kanji, label='recognition only')
-    ax1.plot(dates, covered_jouyou, label='jouyou coverage', alpha=0.5)
+    ax1.plot(plot_dates, jouyou_coverage, label='jouyou coverage', alpha=0.5)
+    ax1.plot(
+        plot_dates,
+        num_kanji_rwroro_names,
+        label='recognition only (including proper nouns)'
+    )
+    ax1.plot(plot_dates, num_kanji_rwro, label='recognition only')
+    ax1.plot(plot_dates, num_kanji_rw, label='recognition + recall')
     ax1.set_ylim(0)
+    ax1.set_xlim(plot_dates[0], plot_dates[-1])
     ax1.grid()
     plt.yticks(
         np.concatenate(
             (
                 np.arange(0, 2000, step=500),
-                np.arange(2000, max(r_kanji), step=200)
+                np.arange(2000, max(num_kanji_rwroro_names), step=200)
             )
         )
     )
 
-    fig.legend(loc='center')
-    fig.tight_layout()
-    fig.savefig('merged.png', dpi=out_dpi)
+    plt.legend(loc='lower right')
+    plt.tight_layout()
+    plt.savefig('merged.png', dpi=out_dpi)
 
 
 if __name__ == '__main__':
