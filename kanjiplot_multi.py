@@ -201,31 +201,46 @@ def kanjiplot_multi():
         len(joint_dates)*['%y%m%d'])
     )
 
-    out_dpi = 96
-    fig, ax1 = plt.subplots(figsize=(700/out_dpi, 300/out_dpi), dpi=out_dpi)
-    ax1.plot(plot_dates, jouyou_coverage, label='jouyou coverage', alpha=0.5)
-    ax1.plot(
-        plot_dates,
-        num_kanji_rwroro_names,
-        label='recognition only (including proper nouns)'
-    )
-    ax1.plot(plot_dates, num_kanji_rwro, label='recognition only')
-    ax1.plot(plot_dates, num_kanji_rw, label='recognition + recall')
-    ax1.set_ylim(0)
-    ax1.set_xlim(plot_dates[0], plot_dates[-1])
-    ax1.grid()
-    plt.yticks(
-        np.concatenate(
-            (
-                np.arange(0, 2000, step=500),
-                np.arange(2000, max(num_kanji_rwroro_names), step=200)
+    for width, height, font_size, fn in [
+        (700, 300, 12, 'merged.png'),
+        (2100, 900, 20, 'merged_large.png')
+    ]:
+        out_dpi = 96
+        fig, ax1 = plt.subplots(
+            figsize=(width/out_dpi, height/out_dpi),
+            dpi=out_dpi
+        )
+        ax1.plot(
+            plot_dates,
+            jouyou_coverage,
+            label='jouyou coverage',
+            alpha=0.5
+        )
+        ax1.plot(
+            plot_dates,
+            num_kanji_rwroro_names,
+            label='recognition only (including proper nouns)'
+        )
+        ax1.plot(plot_dates, num_kanji_rwro, label='recognition only')
+        ax1.plot(plot_dates, num_kanji_rw, label='recognition + recall')
+        ax1.set_ylim(0)
+        ax1.set_xlim(plot_dates[0], plot_dates[-1])
+        ax1.grid()
+        plt.yticks(
+            np.concatenate(
+                (
+                    np.arange(0, 2000, step=500),
+                    np.arange(2000, max(num_kanji_rwroro_names), step=200)
+                )
             )
         )
-    )
 
-    plt.legend(loc='lower right')
-    plt.tight_layout()
-    plt.savefig('merged.png', dpi=out_dpi)
+        plt.legend(
+            loc='lower right',
+            fontsize=font_size
+        )
+        plt.tight_layout()
+        plt.savefig(fn, dpi=out_dpi)
 
 
 if __name__ == '__main__':
